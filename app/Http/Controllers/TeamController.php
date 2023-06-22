@@ -83,4 +83,27 @@ class TeamController extends Controller
         /* 保存終了したら、チーム一覧画面に戻る */
         return redirect('/team');
     }
+    public function list(Request $request)
+    {
+        $keyword = $request->input('keyword');
+
+        $query = Team::query();
+        if ($request->has('check')) {
+            /* Contact モデルのオブジェクトを作成 */
+            $id = $request->id;
+
+            $new_team = Team::find($id);
+            /* リクエストで渡された値を設定する */
+
+            $new_team->check = $request->check;
+            /* データベースに保存 */
+            $new_team->save();
+
+            /* 完了画面を表示する */
+            return redirect('/team');
+        }
+        if (!empty($keyword)) {
+            $query->where('name', 'LIKE', "%{$keyword}%");
+        }
+    }
 }

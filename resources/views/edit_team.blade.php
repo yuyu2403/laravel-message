@@ -39,5 +39,9 @@
     </div>
     @csrf
 </form>
+<form action="{{route('logout')}}" method="post">
+        <button type="submit">ログアウト</button>
+            @csrf
+</form>
 </body>
 </html>

@@ -99,4 +99,28 @@ class PlayerController extends Controller
         /* 保存終了したら、チーム一覧画面に戻る */
         return redirect('/player');
     }
+
+    public function list(Request $request)
+    {
+        $keyword = $request->input('keyword');
+
+        $query = Player::query();
+        if ($request->has('check')) {
+            /* Contact モデルのオブジェクトを作成 */
+            $id = $request->id;
+
+            $new_player = Player::find($id);
+            /* リクエストで渡された値を設定する */
+
+            $new_player->check = $request->check;
+            /* データベースに保存 */
+            $new_player->save();
+
+            /* 完了画面を表示する */
+            return redirect('/player');
+        }
+        if (!empty($keyword)) {
+            $query->where('name', 'LIKE', "%{$keyword}%");
+        }
+    }
 }
