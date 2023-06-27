@@ -149,8 +149,11 @@ Route::get('/player/edit/{id}', [PlayerController::class, 'edit']);
 Route::post('/player/edit/{id}', [PlayerController::class, 'update']);
 Route::get('/coach/edit/{id}', [CoachController::class, 'edit']);
 Route::post('/coach/edit/{id}', [CoachController::class, 'update']);
-Route::get('/position/edit/{id}', [PositionController::class, 'edit']);
-Route::post('/position/edit/{id}', [PositionController::class, 'update']);
+
+Route::prefix('position')->group(function () {
+    Route::get('edit/{id}', [PositionController::class, 'edit']);
+    Route::post('edit/{id}', [PositionController::class, 'update']);
+});
 
 Route::get('/coach/add', [CoachController::class, 'add_coach']);
 Route::get('/team/add', [TeamController::class, 'add_team']);
@@ -218,5 +221,61 @@ Route::get('/email/verify', function () {
     return view('auth.verify-email');
 })->middleware('auth')->name('verification.notice');
 
+/* Tailwindのサンプル用のルーティングを追加 */
+Route::get('tailwind-sample', function () {
+    return view('tailwind-sample');
+});
 
+Route::get('/injection-test-login', function () {
+    return view('injection_test');
+});
+
+/* SQLインジェクションが生じないログイン処理を呼び出すルーティング */
+Route::post('/injection-test-login', ['App\Http\Controllers\InjectionTestController', 'login']);
+
+Route::post('/injection-test-login-valnerable', ['App\Http\Controllers\InjectionTestController', 'loginVulnerable']);
+/* CSRF 攻撃が生じるルーティング */
+/* GET メソッドはワンタイムトークンの検証をしないため、CSRF脆弱性が生じる */
+Route::get('/csrf-login-valnerable', ['App\Http\Controllers\InjectionTestController', 'login']);
+
+/* XSS試験用のページを表示するルーティング */
+Route::get('/xss-test', function (Illuminate\Http\Request $request) {
+    /* keyword が送信されている場合、変数に代入する */
+    $keyword = '';
+    if ($request->input('keyword') != null) {
+        $keyword = $request->input('keyword');
+    }
+
+    /* 入力された内容を変数に含めて、viewを呼び出す */
+    return view('xss_test', compact('keyword'));
+});
+
+/* XSS試験用のページを表示するルーティング */
+Route::get('/xss-test_valnerable', function (Illuminate\Http\Request $request) {
+    /* keyword が送信されている場合、変数に代入する */
+    $keyword = '';
+    if ($request->input('keyword') != null) {
+        $keyword = $request->input('keyword');
+    }
+
+    /* 入力された内容を変数に含めて、viewを呼び出す */
+    return view('xss-test_valnerable', compact('keyword'));
+});
+
+/* EncryptedReports のデータを一覧表示するルーティング */
+Route::get('/encrypted-reports', function () {
+    /* EncryptedREports モデルを通じて取得すると、contentが復号されている */
+    $records = App\Models\EncryptedReport::all()->toArray();
+
+    /* dump() で、引数に渡された内容を構造化して表示する */
+    dump($records);
+});
+
+/* EncryptedReports のcontent カラムを検索するルーティング */
+Route::get('/encrypted-reports-search', function () {
+    /* content カラムに、「おはようございます」を含むレコードを検索する */
+    $records = App\Models\EncryptedReport::where('content', 'おはようございます')->get();
+
+    print("content カラムに「おはようございます」を含む件数： {$records->count()} 件");
+});
 require __DIR__ . '/auth.php';
